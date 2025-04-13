@@ -3,7 +3,7 @@
 import functools
 import json
 import logging
-from typing import Any, Dict, Tuple, Type
+from typing import Any, Dict, Optional, Tuple, Type
 
 import boto3
 from pydantic.fields import FieldInfo
@@ -21,11 +21,11 @@ class AWSParamStoreAppSource(PydanticBaseEnvSettingsSource):
     def __init__(
         self,
         settings_cls: type[BaseSettings],
-        aws_param_store_name: str | None = None,
-        case_sensitive: bool | None = None,
-        env_prefix: str | None = None,
-        env_ignore_empty: bool | None = None,
-        env_parse_none_str: str | None = None,
+        aws_param_store_name: Optional[str] = None,
+        case_sensitive: Optional[bool] = None,
+        env_prefix: Optional[str] = None,
+        env_ignore_empty: Optional[bool] = None,
+        env_parse_none_str: Optional[str] = None,
     ) -> None:
         """Class constructor"""
         super().__init__(
@@ -79,7 +79,7 @@ class AWSParamStoreAppSource(PydanticBaseEnvSettingsSource):
     @classmethod
     def find_case_param(
         cls, json_contents: dict, param_name: str, case_sensitive: bool
-    ) -> str | None:
+    ) -> Optional[str]:
         """
         Find a parameter from a json dictionary pulled from aws
 
