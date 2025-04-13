@@ -80,7 +80,7 @@ class TestAWSParamStoreSource(unittest.TestCase):
     @patch.object(
         AWSParamStoreAppSource, "_json_contents", new_callable=PropertyMock
     )
-    def test_get_field_value_failure(self, mock_json_contents):
+    def test_get_field_value_failure(self, mock_json_contents: MagicMock):
         """Tests that field value is not retrieved successfully"""
 
         mock_json_contents.return_value = {}
