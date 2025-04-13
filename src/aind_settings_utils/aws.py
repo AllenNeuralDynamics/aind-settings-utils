@@ -20,7 +20,7 @@ class AWSParamStoreAppSource(PydanticBaseEnvSettingsSource):
     # noinspection PyUnresolvedReferences
     def __init__(
         self,
-        settings_cls: type[BaseSettings],
+        settings_cls: Type[BaseSettings],
         aws_param_store_name: Optional[str] = None,
         case_sensitive: Optional[bool] = None,
         env_prefix: Optional[str] = None,
@@ -108,7 +108,7 @@ class AWSParamStoreAppSource(PydanticBaseEnvSettingsSource):
 
     def get_field_value(
         self, field: FieldInfo, field_name: str
-    ) -> tuple[Any, str, bool]:
+    ) -> Tuple[Any, str, bool]:
         """
         Gets the value for field from secret file and a flag to determine
         whether value is complex.
@@ -120,7 +120,7 @@ class AWSParamStoreAppSource(PydanticBaseEnvSettingsSource):
 
         Returns
         -------
-        tuple[Any, str, bool]
+        Tuple[Any, str, bool]
           A tuple contains the key, value if the file exists otherwise `None`,
           and a flag to determine whether the value is complex.
         """
