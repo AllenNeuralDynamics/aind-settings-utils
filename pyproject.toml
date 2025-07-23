@@ -17,8 +17,7 @@ readme = "README.md"
 dynamic = ["version"]
 
 dependencies = [
-    'boto3',
-    'pydantic-settings>=2.0',
+    'pydantic-settings[aws-secrets-manager]>=2.9.0',
     'pydantic>=2.0',
 ]
 

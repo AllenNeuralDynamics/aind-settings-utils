@@ -3,11 +3,16 @@
 import functools
 import json
 import logging
+import os
 from typing import Any, Dict, Optional, Tuple, Type
 
 import boto3
 from pydantic.fields import FieldInfo
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
+from pydantic_settings import (
+    AWSSecretsManagerSettingsSource,
+    BaseSettings,
+    PydanticBaseSettingsSource,
+)
 from pydantic_settings.sources import PydanticBaseEnvSettingsSource
 
 
@@ -172,6 +177,44 @@ class ParameterStoreAppBaseSettings(BaseSettings):
             return (
                 init_settings,
                 AWSParamStoreAppSource(settings_cls),
+                env_settings,
+                dotenv_settings,
+                file_secret_settings,
+            )
+
+
+class SecretsManagerBaseSettings(BaseSettings):
+    """Base Settings that will fall back to AWS Secrets Manager."""
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],  # noqa
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """If env var is not set, then use standard fall backs."""
+
+        secret_manager_id = os.getenv("AWS_SECRETS_MANAGER_SECRET_ID")
+        if secret_manager_id:
+            aws_secrets_manager_settings = AWSSecretsManagerSettingsSource(
+                settings_cls,
+                secret_manager_id,
+                case_sensitive=False,
+                region_name=os.getenv("AWS_REGION"),
+            )
+            return (
+                init_settings,
+                env_settings,
+                dotenv_settings,
+                file_secret_settings,
+                aws_secrets_manager_settings,
+            )
+        else:
+            return (
+                init_settings,
                 env_settings,
                 dotenv_settings,
                 file_secret_settings,
