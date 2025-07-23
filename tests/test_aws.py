@@ -1,11 +1,13 @@
 """Module to test custom settings"""
 
+import os
 import unittest
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from aind_settings_utils.aws import (
     AWSParamStoreAppSource,
     ParameterStoreAppBaseSettings,
+    SecretsManagerBaseSettings,
 )
 
 
@@ -18,6 +20,13 @@ class ExampleSettings(ParameterStoreAppBaseSettings):
         "aws_param_store_name": "example-name",
         "case_sensitive": False,
     }
+
+
+class ExampleSettingsForSecretsManager(SecretsManagerBaseSettings):
+    """Example settings class for testing"""
+
+    my_param_1: str
+    my_param_2: int
 
 
 class TestAWSParamStoreSource(unittest.TestCase):
@@ -131,6 +140,48 @@ class TestParameterStoreAppBaseSettings(unittest.TestCase):
         )
         self.assertEqual(sources[0], init)
         self.assertEqual(len(sources), 4)
+
+
+class TestSecretsManagerBaseSettings(unittest.TestCase):
+    """Test SecretsManagerBaseSettings class"""
+
+    @patch.dict(
+        os.environ,
+        dict(),
+        clear=True,
+    )
+    @patch("boto3.client")
+    def test_settings_no_secrets_manager(self, mock_boto: MagicMock):
+        """Tests settings with no secret manager id"""
+        settings = ExampleSettingsForSecretsManager(
+            my_param_1="a", my_param_2=1
+        )
+        mock_boto.assert_not_called()
+        self.assertIsNotNone(settings)
+
+    @patch.dict(
+        os.environ,
+        {
+            "AWS_SECRETS_MANAGER_SECRET_ID": "abc/def",
+            "AWS_REGION": "us-west-2",
+        },
+        clear=True,
+    )
+    @patch("boto3.client")
+    def test_settings_with_secrets_manager(self, mock_boto: MagicMock):
+        """Tests settings with no secret manager id"""
+
+        mock_sm = MagicMock()
+        mock_sm.get_secret_value.return_value = {
+            "SecretString": '{"MY_PARAM_1":"a","MY_PARAM_2":"1"}'
+        }
+        mock_boto.return_value = mock_sm
+
+        settings = ExampleSettingsForSecretsManager()
+        expected_settings = ExampleSettingsForSecretsManager(
+            my_param_1="a", my_param_2=1
+        )
+        self.assertEqual(settings, expected_settings)
 
 
 if __name__ == "__main__":
